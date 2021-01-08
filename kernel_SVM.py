@@ -18,7 +18,7 @@ dataset['Cabin'] = dataset['Cabin'].replace(np.nan, 0)
 for i in range(0,len(dataset['Cabin'])):
     if type(dataset['Cabin'][i]) is str:
         dataset['Cabin'][i] = 1
-dataset['Age'] = dataset['Age'].replace(np.nan, int(dataset['Age'].mean()))
+#dataset['Age'] = dataset['Age'].replace(np.nan, int(dataset['Age'].mean()))
 dataset['Embarked'] = dataset['Embarked'].replace(np.nan, "S")
 
 X = dataset.iloc[:, [2,4,5,6,7,9,10,11]].values
@@ -51,7 +51,12 @@ ct_1 = ColumnTransformer(
     remainder='passthrough')
 X = np.array(ct_1.fit_transform(X))
 X = X[:,1:]
+X = X.astype(np.float)
 
+from impyute.imputation.cs import mice
+imputed = mice(X)
+mice_ages = imputed[:, 5]
+X[:,5 ] = mice_ages
 # Escalado de variables
 from sklearn.preprocessing import StandardScaler
 sc_X = StandardScaler()
@@ -60,11 +65,6 @@ X = sc_X.fit_transform(X)
 # Dividir el data set en conjunto de entrenamiento y conjunto de testing
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state = 0)
-
-# from sklearn.decomposition import KernelPCA
-# kpca = KernelPCA(n_components = 6, kernel = "rbf")
-# X_train = kpca.fit_transform(X_train)
-# X_test = kpca.transform(X_test)
 
 # Ajustar el clasificador en el Conjunto de Entrenamiento
 from sklearn.svm import SVC
